@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "656978908799",
+    "firebase_url": "https://custom-joget-mobile-default-rtdb.firebaseio.com",
+    "project_id": "custom-joget-mobile",
+    "storage_bucket": "custom-joget-mobile.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:656978908799:android:1112dc111ee10261ce114a",
+        "android_client_info": {
+          "package_name": "com.example.custom.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiNEf3C9vEH2573XaIs9WHB7mlKd0rxTA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

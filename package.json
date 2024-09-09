@@ -1,0 +1,23 @@
+{
+  "cordova": {
+    "platforms": [
+      "android"
+    ],
+    "plugins": {
+      "cordova-plugin-inappbrowser": {},
+      "cordova-plugin-fingerprint-aio": {},
+      "cordova-plugin-device": {},
+      "@havesource/cordova-plugin-push": {
+        "ANDROIDX_CORE_VERSION": "1.6.+",
+        "FCM_VERSION": "23.+"
+      }
+    }
+  },
+  "devDependencies": {
+    "@havesource/cordova-plugin-push": "^4.0.0",
+    "cordova-android": "^13.0.0",
+    "cordova-plugin-device": "^3.0.0",
+    "cordova-plugin-fingerprint-aio": "^6.0.0",
+    "cordova-plugin-inappbrowser": "^5.0.0"
+  }
+}

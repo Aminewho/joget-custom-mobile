@@ -1,0 +1,8 @@
+# Default ignored files
+/shelf/
+/.idea
+/platforms
+/node_modules
+android.keystore
+/plugins
+
