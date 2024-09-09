@@ -109,6 +109,18 @@ handleResetPassword: function() {
         return false;
     },
 
+  handleRegistration: function() {
+        console.log('In handleRegistration method');
+        var url = MobileApp.getFullUrl(MobileApp.homeUrl);
+        if (url.endsWith("/mobile")) {
+            // Remove the "/mobile" part from the URL
+            url = url.substring(0, url.length - "/mobile".length);
+        }
+        url += "/userview/userRegistration/userRegistrationUserview/A7871FD4089E4D91BA235898F81C061A";
+        console.log('registrationUrl = '+url);
+        MobileApp.showFrame(url);
+        return false;
+    },
 
     init: function(homeUrl) {
        document.addEventListener("deviceready", MobileApp.initDevice, false);
