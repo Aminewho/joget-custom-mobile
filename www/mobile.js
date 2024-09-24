@@ -3,129 +3,22 @@ var MobileApp = {
 
     floatingButton: true,
     geolocation: false,
-    homeUrl: "http://167.86.115.19:8082/jw",
-
-/*checkCredentials: function() {
-    var url = 'http://167.86.115.19:7501/jw/web/json/directory/user/sso';
-    var username = $("#username").val().trim();
-    var password = $("#password").val().trim();
-
-
-
-    var encodedUsername = encodeURIComponent(username);
-    var encodedPassword = encodeURIComponent(password);
-
-    // Construct the URL with the encoded credentials
-    var fullUrl = `${url}?j_username=${encodedUsername}&j_password=${encodedPassword}`;
-
-    // Perform the AJAX request using fetch
-    fetch(fullUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        credentials: 'include', // To include cookies in the request
-    })
-    .then(response => {
-        if (response.status === 200) {
-            console.log("status",response.status);
-            return response.json();
-        } else if (response.status === 401) {
-            console.log("status",response.status);
-            throw new Error('Unauthorized');
-        } else {
-            console.log("status",response.status);
-            throw new Error('Unexpected response');
-        }
-    })
-    .then(data => {
-        // Handle successful response
-        console.log('Success:', data);
-        if (data.isAdmin) {
-            console.log('User is an admin');
-           MobileApp.loginBiometric();
-            // Additional logic for successful login
-        }
-    })
-    .catch(error => {
-        // Handle error response
-        console.error('Error:', error);
-        if (error.message === 'Unauthorized') {
-            console.log('Invalid credentials');
-            // Additional logic for failed login
-        }
-    });
-    return false;
-}*/
-checkCredentials: function() {
-    var url = 'http://167.86.115.19:8082/jw/web/json/directory/user/sso';
-    var username = $("#username").val().trim();
-    var password = $("#password").val().trim();
-
-
-
-    var encodedUsername = encodeURIComponent(username);
-    var encodedPassword = encodeURIComponent(password);
-
-    // Construct the URL with the encoded credentials
-    var fullUrl = `${url}?j_username=${encodedUsername}&j_password=${encodedPassword}`;
-
-    // Perform the AJAX request using fetch
-    fetch(fullUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        credentials: 'include', // To include cookies in the request
-    })
-    .then(response => {
-        if (response.status === 200) {
-            console.log("status",response.status);
-            MobileApp.loginBiometric();
-        } else {
-          alert("Wrong credentials");
-        }
-    })
-    .catch(error => {
-        // Handle error response
-        console.error('Error:', error);
-        if (error.message === 'Unauthorized') {
-            console.log('Invalid credentials');
-            // Additional logic for failed login
-        }
-    });
-    return false;
-},
-handleResetPassword: function() {
-        console.log('In handleResetPassword method');
-        var url = MobileApp.getFullUrl(MobileApp.homeUrl);
-        if (url.endsWith("/mobile")) {
-            // Remove the "/mobile" part from the URL
-            url = url.substring(0, url.length - "/mobile".length);
-        }
-        url += "/userview/resetPassword/emailUserView/_/resetPassword?embed=true";
-        console.log('resetPasswordUrl = '+url);
-        MobileApp.showFrame(url);
-        return false;
-    },
-
-  handleRegistration: function() {
-        console.log('In handleRegistration method');
-        var url = MobileApp.getFullUrl(MobileApp.homeUrl);
-        if (url.endsWith("/mobile")) {
-            // Remove the "/mobile" part from the URL
-            url = url.substring(0, url.length - "/mobile".length);
-        }
-        url += "/userview/userRegistration/userRegistrationUserview/A7871FD4089E4D91BA235898F81C061A";
-        console.log('registrationUrl = '+url);
-        MobileApp.showFrame(url);
-        return false;
-    },
+    homeUrl: null,
 
     init: function(homeUrl) {
-       document.addEventListener("deviceready", MobileApp.initDevice, false);
-       $(".is-invalid").removeClass("is-invalid");
-       var profileList = MobileApp.getProfileList();
+        // device-specific initialization
+        document.addEventListener("deviceready", MobileApp.initDevice, false);
+
+        // reset login form validation 
+        $(".is-invalid").removeClass("is-invalid");
+
+        // hide profile management buttons
+        $("#profile-buttons").hide();
+        
+        // load profiles
+        var profileList = MobileApp.getProfileList();
+
+        // check for specified home URL
         if (typeof homeUrl === "string" && homeUrl !== "") {
             MobileApp.homeUrl = homeUrl;
         }
@@ -182,7 +75,7 @@ handleResetPassword: function() {
                 profile = "default";
             }
             $("#profile").val(profile).trigger("change");
-            //MobileApp.loadProfile(profile);
+            MobileApp.loadProfile(profile);
 
             // register device for push
             try {
@@ -364,7 +257,7 @@ handleResetPassword: function() {
 
     newProfile: function() {
         $("#profile-container").html("");
-        $("#profile-buttons").hide();
+        $("#profile-buttons").hide();        
         $("#profile").show();
 
         if ($("#login-form #cancel").length == 0) {
@@ -420,7 +313,7 @@ handleResetPassword: function() {
                         function errorCallback(error) {
                             console.log("loginWithBiometric: " + error.message);
                         }
-                }
+                }    
                 function isAvailableError(error) {
                     // biometric not available, use default login
                     console.log("loginWithBiometric error: " + error);
@@ -432,11 +325,10 @@ handleResetPassword: function() {
         }
         return false;
     },
-    login: function() {
-       var profile = $("#profile").val().trim();
-        //var url = $("#url").val().trim();
-        var url = MobileApp.homeUrl;
 
+    login: function() {
+        var profile = $("#profile").val().trim();
+        var url = $("#url").val().trim();
         var username = $("#username").val().trim();
         var password = $("#password").val();
         var rememberPassword = $("#rememberPassword:checked").val();
@@ -469,8 +361,6 @@ handleResetPassword: function() {
                     var contextPath = pathName.substring(1, idx + 1);
                     var apiUrl = urlParser.protocol + "//" + urlParser.host + "/" + contextPath + "/web/mapp/xxx/xxx";
                     $.support.cors = true;
-                    console.log('apiUrl',apiUrl);
-                    console.log('url',url);
                     try {
                         $.ajax({
                             type: 'GET',
@@ -479,7 +369,6 @@ handleResetPassword: function() {
                             error: function (data) {
                                 if (data.status === 401 || data.status === 404) {
                                     success = true;
-                                    console.log('data.status',data.status);
                                     if ($("#profile").length > 0) {
                                         MobileApp.addProfile(profile);
                                     }
@@ -501,7 +390,6 @@ handleResetPassword: function() {
 
                                 } else {
                                     MobileApp.hideLoading();
-                                    console.log('data.status',data.status);
                                     alert("Invalid Server or Unsupported Version");
                                 }
                             }
@@ -540,7 +428,6 @@ handleResetPassword: function() {
         var profiles = profileList.split(";");
         for (var i = 0; i < profiles.length; i++) {
             var profile = profiles[i];
-            console.log("**pro",profile);
             var rememberPassword = MobileApp.getRememberPassword(profile);
             if (rememberPassword === "true") {
                 console.log("checking profile: " + profile);
@@ -560,7 +447,6 @@ handleResetPassword: function() {
 
         if (!login) {
             // show URL in frame
-               console.log("************** ");
             MobileApp.showFrame(url);
         }
     },
@@ -570,163 +456,178 @@ handleResetPassword: function() {
         parser.href = url;
         var hostUri = parser.protocol + "//" + parser.host;
         var search = parser.search;
-        var loginUrl = hostUri + "/jw/j_spring_security_check";
+        var loginUrl = hostUri + "/jw/j_spring_security_check";    
         var credentials = "j_username=" + encodeURIComponent(username) + "&j_password=" + encodeURIComponent(password);
         var newUrl = url;
-        newUrl += (search) ? "&" : "?";
-        newUrl += "_cordova=true";
-        MobileApp.showFrame(newUrl, loginUrl, credentials);
-        console.log("fullurl",newUrl);
+        if (newUrl.indexOf("/web/userview/") > 0) {
+            newUrl = newUrl.replace('userview','ulogin');
+        } else {
+            newUrl += (search) ? "&" : "?";
+            newUrl += "_cordova=true";
+        }
+        MobileApp.showFrame(newUrl, loginUrl, credentials, username, password);
     },
 
-    showFrame: function(url, loginUrl, credentials) {
-            // implementation using InAppBrowser plugin https://cordova.apache.org/docs/en/latest/reference/cordova-plugin-inappbrowser/
-            // use InAppBrowser.executeScript method because session cookies are not passed over to the webview
-            var inAppBrowser = (typeof cordova !== "undefined") ? cordova.InAppBrowser : window;
-            var ios = typeof device !== "undefined" && device.platform === "iOS";
-            var showLocationBar = (MobileApp.floatingButton && !ios) ? "no" : "yes"; // location bar should always be shown in iOS so that back navigation buttons are available e.g. when viewing images/documents
-            MobileApp.inAppBrowser = inAppBrowser.open(url, "_blank", "hidden=yes,location=" + showLocationBar + ",toolbar=" + showLocationBar + ",toolbarcolor=#000000,navigationbuttoncolor=#ffffff,closebuttoncolor=#ffffff,closebuttoncaption=X,toolbartranslucent=no,toolbarposition=bottom,hideurlbar=yes,zoom=no,clearsessioncache=yes");
-
-            if (loginUrl) {
-                // perform login
-                var callback = function() {
-                    var loginScript = " \
-                        try { \
-                            var xhttp = new XMLHttpRequest(); \
-                            xhttp.onreadystatechange = function() { \
-                                if (this.readyState == 4  ) { \
-                                    console.log('login done'); \
-                                    window.location.href='" + url + "'; \
-                                    var data = {'action': 'show', 'message': 'true'}; \
-                                    var json = JSON.stringify(data); \
-                                    window.onload=function(){webkit.messageHandlers.cordova_iab.postMessage(json);}; \
+    showFrame: function(url, loginUrl, credentials, username, password) {
+        // implementation using InAppBrowser plugin https://cordova.apache.org/docs/en/latest/reference/cordova-plugin-inappbrowser/
+        // use InAppBrowser.executeScript method because session cookies are not passed over to the webview
+        var inAppBrowser = (typeof cordova !== "undefined") ? cordova.InAppBrowser : window;
+        var ios = typeof device !== "undefined" && device.platform === "iOS";
+        var showLocationBar = (MobileApp.floatingButton && !ios) ? "no" : "yes"; // location bar should always be shown in iOS so that back navigation buttons are available e.g. when viewing images/documents
+        MobileApp.inAppBrowser = inAppBrowser.open(url, "_blank", "hidden=yes,location=" + showLocationBar + ",toolbar=" + showLocationBar + ",toolbarcolor=#000000,navigationbuttoncolor=#ffffff,closebuttoncolor=#ffffff,closebuttoncaption=X,toolbartranslucent=no,toolbarposition=bottom,hideurlbar=yes,zoom=no");
+        if (loginUrl) {
+            // perform login
+            var callback = function () {
+                var loginScript = " \
+                    try { \
+                        var xhttp = new XMLHttpRequest(); \
+                        xhttp.onreadystatechange = function() { \
+                            if (this.readyState == 4) { \
+                                console.log('login done'); \
+                                var redirectURL = '" + url + "'; \
+                                var parser = new DOMParser(); \
+                                var responseHTML = parser.parseFromString(this.responseText, 'text/html'); \
+                                var loginForm = responseHTML.querySelector('form#loginForm'); \
+                                if (loginForm && document.querySelector('form#loginForm')) { \
+                                    redirectURL = '';  \
+                                    document.getElementById('j_username').value = '" + username + "'; \
+                                    document.getElementById('j_password').value = '" + password + "'; \
+                                    var loginButton = document.querySelector('body#login #loginForm table td input[type=\"submit\"]'); \
+                                    if (loginButton) { \
+                                        loginButton.click(); \
+                                    }\
                                 } \
-                            }; \
-                            xhttp.open('POST', '" + loginUrl + "', false); \
-                            xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); \
-                            console.log('logging in'); \
-                            xhttp.send('" + credentials + "'); \
-                            document.body.innerHTML = '<div style=\"margin-left:45%;margin-top:10%\"><img src=\"/jw/xadmin/lib/layui/css/modules/layer/default/loading-0.gif\"></div>'; \
-                        } catch(e) { \
-                            console.log(e); \
-                        } ";
-                    if (MobileApp.inAppBrowser.executeScript) {
-                        // InAppBrowser detected, use executeScript to insert code
-                        try {
-                            MobileApp.inAppBrowser.executeScript({code: loginScript});
-                        } catch(e) {
-                            console.log(e);
-                        }
-                    } else {
-                        // fallback to standard JS eval function
-                            try {
-                            MobileApp.inAppBrowser.eval(loginScript);
-                            MobileApp.hideLoading();
-                        } catch(e) {
-                            console.log(e);
-                        }
+                                if (redirectURL) { \
+                                    window.location.href = redirectURL; \
+                                } \
+                                var data = {'action': 'show', 'message': 'true'}; \
+                                var json = JSON.stringify(data); \
+                                window.onload=function(){webkit.messageHandlers.cordova_iab.postMessage(json);}; \
+                            } \
+                        }; \
+                        xhttp.open('POST', '" + loginUrl + "', false); \
+                        xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); \
+                        console.log('logging in'); \
+                        xhttp.send('" + credentials + "'); \
+                        document.body.innerHTML = '<div style=\"margin-left:45%;margin-top:10%\"><img src=\"/jw/xadmin/lib/layui/css/modules/layer/default/loading-0.gif\"></div>'; \
+                    } catch(e) { \
+                        console.log(e); \
+                    } ";
+                if (MobileApp.inAppBrowser.executeScript) {
+                    // InAppBrowser detected, use executeScript to insert code
+                    try {
+                        MobileApp.inAppBrowser.executeScript({code: loginScript});
+                    } catch(e) {
+                        console.log(e);
                     }
-                    console.log("login: " + loginUrl);
-                    MobileApp.inAppBrowser.removeEventListener("loadstop", callback);
-                    MobileApp.inAppBrowser.removeEventListener("load", callback);
-                };
-                MobileApp.inAppBrowser.addEventListener("loadstop", callback);
-                MobileApp.inAppBrowser.addEventListener("load", callback);
-            }
+                } else {
+                    // fallback to standard JS eval function
+                    try {
+                        MobileApp.inAppBrowser.eval(loginScript);
+                        MobileApp.hideLoading();
+                    } catch(e) {
+                        console.log(e);
+                    }
+                }
+                console.log("login: " + loginUrl);
+                MobileApp.inAppBrowser.removeEventListener("loadstop", callback);
+                MobileApp.inAppBrowser.removeEventListener("load", callback);
+            };
+            MobileApp.inAppBrowser.addEventListener("loadstop", callback);
+            MobileApp.inAppBrowser.addEventListener("load", callback);
+        }
 
-            // insert custom JavaScript codes into the InAppBrowser window once it stops loading
-            MobileApp.inAppBrowser.addEventListener("loadstop", function() {
-                // show the InAppBrowser window
-                MobileApp.hideLoading();
-                MobileApp.inAppBrowser.show();
+        // insert custom JavaScript codes into the InAppBrowser window once it stops loading
+        MobileApp.inAppBrowser.addEventListener("loadstop", function() {
+            // show the InAppBrowser window
+            MobileApp.hideLoading();
+            MobileApp.inAppBrowser.show();
 
-                // InAppBrowser message event listener
-                MobileApp.inAppBrowser.addEventListener("message", function(params) {
-                    var action = params.data.action;
-                    var message = params.data.message;
-                    MobileApp.cordovaAction(action, message, params);
-                });
+            // InAppBrowser message event listener
+            MobileApp.inAppBrowser.addEventListener("message", function(params) {
+                var action = params.data.action;
+                var message = params.data.message;
+                MobileApp.cordovaAction(action, message, params);                
+            });
 
-                // insert utility function cordovaAction into InAppBrowser
+            // insert utility function cordovaAction into InAppBrowser
+            MobileApp.inAppBrowser.executeScript({ code: "\
+                var cordovaAction = function(action, message) { \
+                    var data = {'action': action, 'message': message}; \
+                    var json = JSON.stringify(data); \
+                    webkit.messageHandlers.cordova_iab.postMessage(json); \
+                } \
+                "
+            });
+            console.log("Injected function cordovaAction");
+
+            // update file download links to force attachment download and hide page loader overlay
+            MobileApp.inAppBrowser.executeScript({ code: '\
+                $(".form-fileupload a[target=_blank]").each(function(index, el) { \
+                    var href = $(el).attr("href"); \
+                    if (href.endsWith(".")) { \
+                        href = href + "?attachment=true"; \
+                    } \
+                    $(el).attr("href", href); \
+                    $(el).off("click"); \
+                    $(el).on("click", function() {  \
+                        setTimeout(function() { \
+                            $(".page-loader").hide(); \
+                        }, 2000); \
+                    }); \
+                }); \
+            '
+            });
+            console.log("Updated file download links");
+
+            if (MobileApp.floatingButton) {
+                // insert floating button code into InAppBrowser
                 MobileApp.inAppBrowser.executeScript({ code: "\
-                    var cordovaAction = function(action, message) { \
-                        var data = {'action': action, 'message': message}; \
-                        var json = JSON.stringify(data); \
-                        webkit.messageHandlers.cordova_iab.postMessage(json); \
+                    if ($('#floatingButton').length == 0) {\
+                        $(document.body).append($(\"<div id='floatingButton'><i class='fa fa-power-off'></i></div>\"));	\
+                    }\
+                    $('#floatingButton').show(); \
+                    $('#floatingButton').on('click', function() { \
+                        cordovaAction('close'); \
+                    }); \
+                    "
+                });
+                console.log("Inserted floating button");
+
+                // insert floating button CSS into InAppBrowser
+                MobileApp.inAppBrowser.insertCSS({ code: "\
+                    #floatingButton { \
+                        z-index: 1000000; \
+                        display: block; \
+                        background: #607D8B; \
+                        position: fixed; \
+                        bottom: 10px; \
+                        left: 10px; \
+                        width: 38px; \
+                        height: 38px; \
+                        border-radius: 20px; \
+                        opacity: 0.8; \
+                        color: white; \
+                        text-align: center; \
+                        font-size: 28px; \
+                        box-shadow: 1px 1px 1px #555; \
+                        pointer: cursor; \
+                    } \
+                    #adminControl { \
+                        display: none !important; \
                     } \
                     "
                 });
-                console.log("Injected function cordovaAction");
-
-                // update file download links to force attachment download and hide page loader overlay
-                MobileApp.inAppBrowser.executeScript({ code: '\
-                    $(".form-fileupload a[target=_blank]").each(function(index, el) { \
-                        var href = $(el).attr("href"); \
-                        if (href.endsWith(".")) { \
-                            href = href + "?attachment=true"; \
-                        } \
-                        $(el).attr("href", href); \
-                        $(el).off("click"); \
-                        $(el).on("click", function() {  \
-                            setTimeout(function() { \
-                                $(".page-loader").hide(); \
-                            }, 2000); \
-                        }); \
-                    }); \
-                '
-                });
-                console.log("Updated file download links");
-
-                if (MobileApp.floatingButton) {
-                    // insert floating button code into InAppBrowser
-                    MobileApp.inAppBrowser.executeScript({ code: "\
-                        if ($('#floatingButton').length == 0) {\
-                            $(document.body).append($(\"<div id='floatingButton'><i class='fa fa-power-off'></i></div>\"));	\
-                        }\
-                        $('#floatingButton').show(); \
-                        $('#floatingButton').on('click', function() { \
-                            AssignmentManager.logout('http://167.86.115.19:7501/jw'); \
-                            cordovaAction('close'); \
-                        }); \
-                        "
-                    });
-                    console.log("Inserted floating button");
-
-                    // insert floating button CSS into InAppBrowser
-                    MobileApp.inAppBrowser.insertCSS({ code: "\
-                        #floatingButton { \
-                            z-index: 1000000; \
-                            display: block; \
-                            background: #607D8B; \
-                            position: fixed; \
-                            bottom: 10px; \
-                            left: 10px; \
-                            width: 38px; \
-                            height: 38px; \
-                            border-radius: 20px; \
-                            opacity: 0.8; \
-                            color: white; \
-                            text-align: center; \
-                            font-size: 28px; \
-                            box-shadow: 1px 1px 1px #555; \
-                            pointer: cursor; \
-                        } \
-                        #adminControl { \
-                            display: none !important; \
-                        } \
-                        "
-                    });
-                    console.log("Inserted floating button CSS");
-                }
-            });
-
-            // init geolocation permission
-            if (MobileApp.geolocation && navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) { console.log(position) });
-                console.log("Geolocation initialized");
+                console.log("Inserted floating button CSS");
             }
-        },
+        });
 
+        // init geolocation permission
+        if (MobileApp.geolocation && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) { console.log(position) });
+            console.log("Geolocation initialized");
+        }
+    },
 
     closeFrame: function() {
         $("#main").fadeIn();
@@ -783,8 +684,8 @@ handleResetPassword: function() {
         if (action === "close") {
             MobileApp.inAppBrowser.close();
         } else if (action === "geolocation") {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                console.log(position)
+            navigator.geolocation.getCurrentPosition(function(position) { 
+                console.log(position) 
             });
         } else if (action === "vibration") {
             navigator.vibrate(1000);
@@ -803,5 +704,4 @@ handleResetPassword: function() {
 }
 $(function() {
     MobileApp.init();
-               // MobileApp.checkCredentials();
 });
