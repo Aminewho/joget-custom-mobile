@@ -1,7 +1,7 @@
 var MobilePush = {
     
-    CONFIG_SENDER_ID: "151651598697",
-    CONFIG_PUSH_SERVER_URL: "https://mobile.cloud.joget.com/jw/web/json/app/jms/plugin/org.joget.mobile.MobilePushPlugin/service",
+    CONFIG_SENDER_ID: "656978908799",
+    CONFIG_PUSH_SERVER_URL: "http://167.86.115.19:8082/jw/web/json/app/jms/plugin/org.joget.mobile.MobilePushPlugin/service",
     pushRegistrationId: "",
 
     init: function() {
@@ -25,11 +25,12 @@ var MobilePush = {
             MobilePush.pushRegistrationId = data.registrationId;
             console.log("MobilePush.pushRegistrationId: " + MobilePush.pushRegistrationId);
             MobilePush.registerDevice();
+
         });
 
         push.on('notification', function (data) {
             console.log("notification title: " + data.title);
-//            alert(JSON.stringify(data));
+            alert(JSON.stringify(data));
             var url = data.additionalData.url;
             MobileApp.popup(data.title, data.message, url);
         });
@@ -39,9 +40,14 @@ var MobilePush = {
         });
 
         var permissions = cordova.plugins.permissions;
-        permissions.hasPermission(permissions.POST_NOTIFICATIONS, function( status ){
+        // Changed hadPermission() to checkPermission() : hadPermission() IS DEPRECATED
+        permissions.checkPermission(permissions.POST_NOTIFICATIONS, function( status ){
             if (!status.hasPermission) {
                 permissions.requestPermission(permissions.POST_NOTIFICATIONS);
+                console.log("Didn't have permission, has it now");
+            }
+            else {
+                console.log("Already has permission");
             }
         });
     },
@@ -81,6 +87,10 @@ var MobilePush = {
                     });
                 }
             }
+            console.log("registrationID is not null");
+        }
+        else {
+            console.log("registrationID is null");
         }
     },
     
