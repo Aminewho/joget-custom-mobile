@@ -1,7 +1,7 @@
 var MobilePush = {
     
-    CONFIG_SENDER_ID: "656978908799",
-    CONFIG_PUSH_SERVER_URL: "http://167.86.115.19:8082/jw/web/json/app/jms/plugin/org.joget.mobile.MobilePushPlugin/service",
+    CONFIG_SENDER_ID: "151651598697",
+    CONFIG_PUSH_SERVER_URL: "https://mobile.cloud.joget.com/jw/web/json/app/jms/plugin/org.joget.mobile.MobilePushPlugin/service",
     pushRegistrationId: "",
 
     init: function() {
@@ -25,33 +25,27 @@ var MobilePush = {
             MobilePush.pushRegistrationId = data.registrationId;
             console.log("MobilePush.pushRegistrationId: " + MobilePush.pushRegistrationId);
             MobilePush.registerDevice();
-
         });
 
         push.on('notification', function (data) {
             console.log("notification title: " + data.title);
-            alert(JSON.stringify(data));
+//            alert(JSON.stringify(data));
             var url = data.additionalData.url;
             MobileApp.popup(data.title, data.message, url);
         });
 
         push.on('error', function (e) {
-            console.log("error: " + e.message);
+            console.log("error: " + e.message);            
         });
 
         var permissions = cordova.plugins.permissions;
-        // Changed hadPermission() to checkPermission() : hadPermission() IS DEPRECATED
-        permissions.checkPermission(permissions.POST_NOTIFICATIONS, function( status ){
+        permissions.hasPermission(permissions.POST_NOTIFICATIONS, function( status ){
             if (!status.hasPermission) {
                 permissions.requestPermission(permissions.POST_NOTIFICATIONS);
-                console.log("Didn't have permission, has it now");
-            }
-            else {
-                console.log("Already has permission");
             }
         });
     },
-
+    
     registerDevice: function() {
         var registrationId = MobilePush.pushRegistrationId;
         if (registrationId) {
@@ -87,13 +81,9 @@ var MobilePush = {
                     });
                 }
             }
-            console.log("registrationID is not null");
-        }
-        else {
-            console.log("registrationID is null");
         }
     },
-
+    
     unregisterDevice: function(profile) {
         var deviceId = device.uuid;
         if (profile !== "") {
@@ -119,38 +109,38 @@ var MobilePush = {
             });
         }
     },
-
+    
     getPushUrl: function(url) {
         if (!url || url === "") {
             return "";
         }
-
+        
         //remove extra "/" at the end of the url
         if (url.match(/\/$/)) {
             url = url.substring(0, url.length - 1);
         }
-
+        
         //if no http/https, add http
         if (!url.toLowerCase().match(/(http|https):\/\/.*$/)) {
             url = "http://" + url;
         }
-
+        
         var pushUrl = url;
-
+        
         //if url is userview or mobile direct link
         if (pushUrl.indexOf("/web/userview/") > 0) {
             pushUrl = pushUrl.substring(0, pushUrl.indexOf("/web/userview/"));
         } else if (pushUrl.indexOf("/web/mobile/") > 0) {
             pushUrl = pushUrl.substring(0, pushUrl.indexOf("/web/mobile/"));
         }
-
+            
         // if without context path, add /jw
         if (!url.toLowerCase().match(/(http|https):\/\/.*\/.*$/)) {
             pushUrl = pushUrl + "/jw";
         }
         pushUrl = pushUrl + "/web/mobile";
         return pushUrl;
-    }
-
+    }    
+    
 }
 document.addEventListener("deviceready", MobilePush.init, false);
